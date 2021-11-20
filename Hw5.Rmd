@@ -14,3 +14,129 @@ library(tidyverse)
 ```
 
 Problem 1
+```{r}
+homicidie_df = 
+  read_csv("./data/homicide-data.csv", na = c("", "Unknown")) %>%
+  mutate(
+    city_state = str_c(city,state),
+    resolution = case_when(
+      disposition == "Closed without arrest" ~ "unsolved",
+      disposition == "Open/No arrest" ~ "unsolved",
+      disposition == "Closed by arrest" ~ "solved"
+    )) %>%
+  relocate(city_state) %>%
+  filter(city_state != "TulsaAL")
+
+```
+
+Baltimore MD
+
+```{r}
+baltimore_df = 
+  homicidie_df %>%
+  filter(city_state == "BaltimoreMD")
+
+baltimore_summary = 
+  baltimore_df %>%
+  summarize(
+    unsolved = sum(resolution == "unsolved"),
+    n = n()
+  )
+baltimore_test = 
+  prop.test(
+  x = baltimore_summary %>% pull(unsolved),
+  n = baltimore_summary %>% pull(n))
+
+baltimore_test  %>%
+  broom::tidy()
+```
+
+```{r}
+prop_test_function = function(city_df){
+
+  city_summary = 
+  city_df %>%
+  summarize(
+    unsolved = sum(resolution == "unsolved"),
+    n = n()
+  )
+  
+  city_test = 
+  prop.test(
+    x = city_summary %>% pull(unsolved),
+    n = city_summary %>% pull(n))
+  
+  return(city_test)
+}
+
+
+prop_test_function(baltimore_df)
+
+homicidie_df %>%
+  filter(city_state == "AlbuquerqueNM") %>%
+  prop_test_function()
+```
+
+```{r}
+result_df = 
+  homicidie_df %>%
+  nest(data = uid:resolution) %>%
+  mutate(
+    test_results = map(data, prop_test_function),
+    tidy_results = map(test_results, broom::tidy)
+  ) %>%
+  select(city_state, tidy_results) %>%
+  unnest(tidy_results)
+
+result_df %>%
+  mutate(city_state = fct_reorder(city_state, estimate)) %>%
+  ggplot(aes(x = city_state, y = estimate)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+Problem 2
+```{r message=FALSE}
+study_df = 
+  tibble(
+    files = list.files("./data/zip_data")) %>%
+  mutate(
+    files_id = str_remove(files, ".csv"),
+    files = str_c("./data/zip_data/", files),
+    data = map(files, read_csv)
+        ) %>%
+    separate(files_id, into = c("treatment_arm", "id"), sep = "_") %>% 
+    mutate(
+      treatment_arm = case_when(
+      treatment_arm == "con" ~"control",
+      treatment_arm == "exp" ~ "experimental")) %>%  # divide control and experimental arm
+    select(-files) %>%
+    relocate(id) %>%
+    unnest(data) 
+
+knitr::kable(study_df)
+
+```
+
+```{r}
+clean_df = 
+  study_df %>%
+    pivot_longer(
+        week_1:week_8,
+        names_to = "week",
+        names_prefix = "week_",
+        values_to = "observation") %>%
+    mutate(
+      week = as.numeric(week)
+      ) 
+clean_df
+```
+
+```{r}
+clean_df %>%
+  ggplot(aes(x = week, y = observation, group = id )) +
+  geom_line(aes(color = id)) +
+  facet_grid(. ~ treatment_arm)
+```
+
