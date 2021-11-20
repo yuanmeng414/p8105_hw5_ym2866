@@ -133,10 +133,20 @@ clean_df =
 clean_df
 ```
 
+This is the tidy data after cleaning. We have `r nrow(clean_df)` participants. The data contain subject ID, arm, and observations over time.
+
 ```{r}
 clean_df %>%
   ggplot(aes(x = week, y = observation, group = id )) +
   geom_line(aes(color = id)) +
   facet_grid(. ~ treatment_arm)
+```
+
+The experimental group have increasing observations over time. Compare to experimental group, control are more stable. The observation of control group lower than experimental group overall. There are more divergence occur after week 2 and 3. 
+
+Problem 3
+
+```{r}
+
 ```
 

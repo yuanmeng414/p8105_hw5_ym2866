@@ -220,6 +220,9 @@ clean_df
     ## 10 02    control           2       -0.88
     ## # … with 150 more rows
 
+This is the tidy data after cleaning. We have 160 participants. The data
+contain subject ID, arm, and observations over time.
+
 ``` r
 clean_df %>%
   ggplot(aes(x = week, y = observation, group = id )) +
@@ -228,3 +231,10 @@ clean_df %>%
 ```
 
 ![](Hw5_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+The experimental group have increasing observations over time. Compare
+to experimental group, control are more stable. The observation of
+control group lower than experimental group overall. There are more
+divergence occur after week 2 and 3.
+
+Problem 3
