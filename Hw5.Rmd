@@ -171,6 +171,8 @@ fill_in_missing = function(vector){
 filled_iris = 
   map(iris_with_missing, fill_in_missing) %>% 
   as_tibble() 
+
 filled_iris
+table(is.na(filled_iris)) # use this function to show there is no NA in the table 
 ```
 

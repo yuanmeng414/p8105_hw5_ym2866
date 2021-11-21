@@ -264,6 +264,7 @@ fill_in_missing = function(vector){
 filled_iris = 
   map(iris_with_missing, fill_in_missing) %>% 
   as_tibble() 
+
 filled_iris
 ```
 
@@ -281,3 +282,11 @@ filled_iris
     ##  9         4.4          2.9         1.4         0.2  setosa 
     ## 10         4.9          3.1         3.77        0.1  setosa 
     ## # … with 140 more rows
+
+``` r
+table(is.na(filled_iris)) # use this function to show there is no NA in the table 
+```
+
+    ## 
+    ## FALSE 
+    ##   750
